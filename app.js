@@ -2,7 +2,6 @@ console.log("🚀 App.js is loaded and running!");
 
 async function init() {
     try {
-        // THE FIX: Using relative paths ('parsers/...') instead of absolute URLs
         await TreeSitter.init({
             locateFile(scriptName) { return 'parsers/' + scriptName; }
         });
@@ -12,21 +11,50 @@ async function init() {
         const langC = await TreeSitter.Language.load('parsers/tree-sitter-c.wasm');
 
         const btn = document.getElementById('updateBtn');
-        const dlBtn = document.getElementById('downloadBtn');
         const input = document.getElementById('inputCode');
         const langSelect = document.getElementById('langSelect');
-        
         const loader = document.getElementById('loader-overlay');
         const chartContainer = document.getElementById('chart-container');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // --- DARK MODE LOGIC ---
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+            });
+        }
+
+        // --- AUTO-LOAD LOGIC ---
+        const savedDraft = localStorage.getItem('autosave_draft');
+        if (savedDraft) {
+            const draftData = JSON.parse(savedDraft);
+            input.value = draftData.code;
+            langSelect.value = draftData.language;
+            console.log("📥 Auto-saved draft loaded!");
+        }
 
         mermaid.initialize({ 
             startOnLoad: false, 
-            theme: 'default',
+            theme: 'base', // 'base' works better with Tailwind's dark/light modes
             flowchart: { useMaxWidth: false } 
         });
 
+        // --- AUTO-SAVE LOGIC ---
+        function triggerAutoSave() {
+            const currentData = {
+                code: input.value,
+                language: langSelect.value
+            };
+            localStorage.setItem('autosave_draft', JSON.stringify(currentData));
+        }
+
+        input.addEventListener('input', triggerAutoSave);
+        langSelect.addEventListener('change', triggerAutoSave);
+
+        // --- GENERATION LOGIC ---
         btn.addEventListener('click', () => {
-            loader.style.display = 'flex';
+            // Tailwind uses 'hidden' class to hide things
+            loader.classList.remove('hidden'); 
             chartContainer.innerHTML = ''; 
 
             setTimeout(async () => {
@@ -39,7 +67,6 @@ async function init() {
 
                     const tree = parser.parse(input.value);
                     let diagramText = generateMermaid(tree.rootNode);
-                    console.log("Mermaid Syntax:\n", diagramText);
                     
                     chartContainer.innerHTML = `<div style="display:inline-block; text-align:left;"><pre class="mermaid">${diagramText}</pre></div>`;
                     
@@ -48,22 +75,9 @@ async function init() {
                 } catch (err) {
                     console.error("Error generating flowchart:", err);
                 } finally {
-                    loader.style.display = 'none';
+                    loader.classList.add('hidden');
                 }
-            }, 50); 
-        });
-
-        dlBtn.addEventListener('click', () => {
-            const svg = chartContainer.querySelector('svg');
-            if (!svg) return alert("Please generate a flowchart first!");
-            const svgData = new XMLSerializer().serializeToString(svg);
-            const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = "my_flowchart.svg";
-            link.click();
-            URL.revokeObjectURL(url);
+            }, 100); 
         });
 
     } catch (e) { 
@@ -71,7 +85,6 @@ async function init() {
     }
 }
 
-// --- THE CORE PARSER ENGINE ---
 function generateMermaid(rootNode) {
     let code = "graph TD\n"; 
     let idCounter = 0;
