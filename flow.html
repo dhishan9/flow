@@ -48,9 +48,13 @@
     </style>
 </head>
 <body class="bg-surface text-on-surface antialiased overflow-hidden h-screen flex flex-col">
+    
     <header class="bg-[#131313] text-[#aec6ff] border-b border-outline-variant/10 flex justify-between items-center px-6 h-16 w-full z-50">
-        <div class="flex items-center gap-8">
-            <span class="text-xl font-bold tracking-tighter text-[#aec6ff]">Code to Flowchart</span>
+        <div class="flex items-center gap-4">
+            <button class="p-2 text-[#acabaa] hover:bg-[#2c2c2c] transition-colors duration-200 rounded-lg active:scale-95" id="toggleSidebarBtn">
+                <span class="material-symbols-outlined" data-icon="menu">menu</span>
+            </button>
+            <span class="text-xl font-bold tracking-tighter text-[#aec6ff] ml-2">Code to Flowchart</span>
         </div>
         <div class="flex items-center gap-4">
             <button class="p-2 text-[#acabaa] hover:bg-[#2c2c2c] transition-colors duration-200 rounded-lg active:scale-95 transition-transform" id="themeToggle">
@@ -60,13 +64,14 @@
     </header>
 
     <div class="flex flex-1 overflow-hidden">
-        <aside class="w-64 bg-[#131313] border-r border-outline-variant/10 flex flex-col z-40">
-            <div class="p-6">
+        
+        <aside id="sidebar" class="bg-[#131313] border-r border-outline-variant/10 flex flex-col z-40 overflow-hidden" style="width: 16rem; transition: all 0.3s ease;">
+            <div class="p-6" style="min-width: 16rem;">
                 <button class="w-full bg-primary text-on-primary font-bold py-3 rounded-lg flex items-center justify-center gap-2 active:scale-95 transition-all text-xs uppercase tracking-widest shadow-lg shadow-primary/10">
                     <span class="material-symbols-outlined text-[18px]">add</span> New Project
                 </button>
             </div>
-            <div class="flex-1 overflow-y-auto px-4 space-y-8 pb-8">
+            <div class="flex-1 overflow-y-auto px-4 space-y-8 pb-8" style="min-width: 16rem;">
                 <div class="space-y-1">
                     <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-widest px-2 mb-3">Saved Projects</p>
                     <a class="group text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest rounded-lg flex items-center justify-between px-3 py-2.5 transition-all text-xs" href="#">
@@ -74,7 +79,7 @@
                     </a>
                 </div>
             </div>
-            <div class="p-6 border-t border-outline-variant/5">
+            <div class="p-6 border-t border-outline-variant/5" style="min-width: 16rem;">
                 <div class="mb-2">
                     <h2 class="text-sm font-black text-white">Monolith</h2>
                     <p class="text-[10px] text-on-surface-variant font-medium">V1.0.2</p>
@@ -84,6 +89,7 @@
 
         <main class="flex-1 flex overflow-hidden">
             <div class="flex flex-col md:flex-row w-full h-full bg-surface">
+                
                 <section class="w-full md:w-[40%] flex flex-col bg-surface border-r border-outline-variant/10 p-6 space-y-4">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-on-surface-variant text-[10px] font-black uppercase tracking-widest">Source Code</h3>
@@ -122,8 +128,8 @@ print(f"The factorial of {number} is {factorial_recursive(number)}")</textarea>
                     <div class="flex-1 bg-surface-container rounded-2xl relative overflow-hidden flex items-center justify-center border border-outline-variant/5 shadow-inner" id="graph-output">
                         <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#aec6ff 1px, transparent 0); background-size: 24px 24px;"></div>
                         
-                        <div class="w-full h-full flex items-center justify-center overflow-auto p-4" id="chart-container">
-                            <div class="flex flex-col items-center text-center max-w-xs animate-in fade-in duration-700">
+                        <div class="w-full h-full overflow-auto p-6" id="chart-container" style="display: block;">
+                            <div id="empty-state" class="flex flex-col items-center justify-center text-center h-full max-w-xs mx-auto animate-in fade-in duration-700">
                                 <div class="w-16 h-16 rounded-3xl bg-surface-container-highest flex items-center justify-center mb-4 shadow-xl">
                                     <span class="material-symbols-outlined text-3xl text-primary/40" data-icon="schema">schema</span>
                                 </div>
@@ -144,6 +150,7 @@ print(f"The factorial of {number} is {factorial_recursive(number)}")</textarea>
                         </div>
                     </div>
                 </section>
+
             </div>
         </main>
     </div>

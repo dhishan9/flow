@@ -301,5 +301,21 @@ function generateMermaid(rootNode) {
 
     return code;
 }
+// --- SIDEBAR TOGGLE LOGIC ---
+        const sidebar = document.getElementById('sidebar');
+        const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+        let isSidebarOpen = true;
 
+        if (toggleSidebarBtn && sidebar) {
+            toggleSidebarBtn.addEventListener('click', () => {
+                isSidebarOpen = !isSidebarOpen;
+                if (isSidebarOpen) {
+                    sidebar.style.width = '16rem';      // Open width
+                    sidebar.style.opacity = '1';
+                } else {
+                    sidebar.style.width = '0px';        // Closed width
+                    sidebar.style.opacity = '0';
+                }
+            });
+        }
 init();
