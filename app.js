@@ -2,20 +2,20 @@ console.log("🚀 App.js is loaded and running!");
 
 async function init() {
     try {
+        // THE FIX: Using relative paths ('parsers/...') instead of absolute URLs
         await TreeSitter.init({
-            locateFile(scriptName) { return window.location.origin + '/parsers/' + scriptName; }
+            locateFile(scriptName) { return 'parsers/' + scriptName; }
         });
         const parser = new TreeSitter();
         
-        const langPython = await TreeSitter.Language.load(window.location.origin + '/parsers/tree-sitter-python.wasm');
-        const langC = await TreeSitter.Language.load(window.location.origin + '/parsers/tree-sitter-c.wasm');
+        const langPython = await TreeSitter.Language.load('parsers/tree-sitter-python.wasm');
+        const langC = await TreeSitter.Language.load('parsers/tree-sitter-c.wasm');
 
         const btn = document.getElementById('updateBtn');
         const dlBtn = document.getElementById('downloadBtn');
         const input = document.getElementById('inputCode');
         const langSelect = document.getElementById('langSelect');
         
-        // NEW: Grab the loader and chart container separately
         const loader = document.getElementById('loader-overlay');
         const chartContainer = document.getElementById('chart-container');
 
@@ -26,11 +26,9 @@ async function init() {
         });
 
         btn.addEventListener('click', () => {
-            // 1. Show loader and clear old chart immediately
             loader.style.display = 'flex';
             chartContainer.innerHTML = ''; 
 
-            // 2. Add a tiny delay so the browser has time to paint the loader UI
             setTimeout(async () => {
                 try {
                     if (langSelect.value === 'c') {
@@ -50,13 +48,11 @@ async function init() {
                 } catch (err) {
                     console.error("Error generating flowchart:", err);
                 } finally {
-                    // 3. Hide the loader when finished (even if it crashed)
                     loader.style.display = 'none';
                 }
             }, 50); 
         });
 
-        // Download Logic
         dlBtn.addEventListener('click', () => {
             const svg = chartContainer.querySelector('svg');
             if (!svg) return alert("Please generate a flowchart first!");
