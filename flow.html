@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Code to Flowchart</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>Code to Flowchart Generator</h2>
+    <div class="container">
+        <textarea id="inputCode">def factorial_recursive(n):
+    if n < 0:
+        return "Not defined for negative numbers"
+    elif n == 0 or n == 1:
+        return 1
+    else:
+        return n * factorial_recursive(n - 1)
+
+number = 5
+print(f"The factorial of {number} is {factorial_recursive(number)}")</textarea>
+        
+        <div id="graph-output">
+            <div id="loader-overlay">
+                <div class="spinner"></div>
+                <p style="font-family: sans-serif; color: #555;">Generating Flowchart...</p>
+            </div>
+            <div id="chart-container"></div> 
+        </div>
+    </div>
+    
+    <div class="controls">
+        <select id="langSelect" class="lang-select">
+            <option value="python">Python</option>
+            <option value="c">C Language</option>
+        </select>
+        
+        <button class="btn" id="updateBtn">Update Flowchart</button>
+        <button class="btn btn-icon" id="downloadBtn" title="Download as SVG">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web-tree-sitter@0.20.8/tree-sitter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.2.4/dist/mermaid.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
