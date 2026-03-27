@@ -46,20 +46,46 @@
         ::-webkit-scrollbar-thumb:hover { background: #484848; }
         #inputCode { resize: none; tab-size: 4; outline: none; }
         
-        /* --- NEW: Dynamic Dark Mode Arrows (Nuclear Option) --- */
+        /* --- NEW: Cohesive Dark Mode Flowchart --- */
+        
+        /* 1. Transparent shapes with blue borders */
+        html.dark .mermaid .node rect,
+        html.dark .mermaid .node polygon,
+        html.dark .mermaid .node circle,
+        html.dark .mermaid .node path {
+            fill: transparent !important;
+            stroke: #aec6ff !important;
+            stroke-width: 1.5px !important;
+        }
+
+        /* 2. White text inside the main nodes */
+        html.dark .mermaid .node .label {
+            color: #e7e5e4 !important;
+            fill: #e7e5e4 !important;
+        }
+
+        /* 3. Blue connection lines and arrows */
         html.dark .mermaid .edgePath path,
-        html.dark .mermaid .edgePaths path,
         html.dark .mermaid path.path { 
             stroke: #aec6ff !important; 
         } 
         html.dark .mermaid marker path { 
             fill: #aec6ff !important; 
-            stroke: #efe9ec !important; 
+            stroke: none !important; 
+        }
+
+        /* 4. Fix the unreadable True/False edge labels */
+        html.dark .mermaid .edgeLabel rect {
+            /* We use the dark background color instead of transparent so the line doesn't strike through the text! */
+            fill: #131313 !important; 
+            stroke: none !important;
         }
         html.dark .mermaid .edgeLabel,
-        html.dark .mermaid .label { 
+        html.dark .mermaid .edgeLabel .label { 
             color: #aec6ff !important; 
-            background-color: #aec6ff !important; 
+            fill: #aec6ff !important;
+            background-color: transparent !important; 
+        }
         }
     </style>
 </head>
