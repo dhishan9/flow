@@ -45,6 +45,11 @@
         ::-webkit-scrollbar-thumb { background: #252626; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #484848; }
         #inputCode { resize: none; tab-size: 4; outline: none; }
+        
+        /* --- NEW: Dynamic Dark Mode Arrows --- */
+        html.dark .edgePath path { stroke: #aec6ff !important; } 
+        html.dark marker path { fill: #aec6ff !important; stroke: none !important; }
+        html.dark .edgeLabel { color: #aec6ff !important; background-color: #131313 !important; }
     </style>
 </head>
 <body class="bg-surface text-on-surface antialiased overflow-hidden h-screen flex flex-col">
