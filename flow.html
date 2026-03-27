@@ -48,12 +48,12 @@
         
         /* --- NEW: Cohesive Dark Mode Flowchart --- */
         
-        /* 1. Transparent shapes with blue borders */
+       /* 1. Solid dark shapes with blue borders */
         html.dark .mermaid .node rect,
         html.dark .mermaid .node polygon,
         html.dark .mermaid .node circle,
         html.dark .mermaid .node path {
-            fill: transparent !important;
+            fill: #131313 !important; /* THE FIX: Solid dark background instead of transparent */
             stroke: #aec6ff !important;
             stroke-width: 1.5px !important;
         }
