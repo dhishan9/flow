@@ -36,7 +36,7 @@
 - No server required — runs entirely in the browser!
 
 ### Quick Start
-
+```
 1. **Clone the repository**
    ```bash
    git clone https://github.com/dhishan9/code-to-flowchart.git
