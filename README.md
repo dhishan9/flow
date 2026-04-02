@@ -1,5 +1,6 @@
----
+Absolutely, Dhishan! Here's the complete README code you can copy and paste directly into your `README.md` file:
 
+```markdown
 # Code to Flowchart 🔄
 
 > **Transform your Python and C code into beautiful, interactive flowcharts instantly**
@@ -8,8 +9,6 @@
 [![Made with](https://img.shields.io/badge/Made%20with-Tree--sitter-blue)](https://tree-sitter.github.io/tree-sitter/)
 [![UI](https://img.shields.io/badge/UI-TailwindCSS-06B6D4)](https://tailwindcss.com/)
 [![Diagrams](https://img.shields.io/badge/Diagrams-Mermaid.js-FF3670)](https://mermaid.js.org/)
-
-![Demo Preview](https://via.placeholder.com/800x400?text=Code+to+Flowchart+Demo) <!-- Add a real screenshot here later -->
 
 ## ✨ Features
 
@@ -22,16 +21,6 @@
 | 📤 **File Support** | Upload code files directly (coming soon) |
 | 🔗 **Live Preview** | Flowchart updates in real-time as you code |
 | 🌙 **Dark Mode** | Easy on the eyes for those late-night coding sessions |
-
-## 🚀 Live Demo
-
-**[Try it live here!](https://yourusername.github.io/code-to-flowchart/)** <!-- Add your GitHub Pages link -->
-
-## 📸 Screenshots
-
-| Editor View | Flowchart Output |
-|-------------|------------------|
-| ![Editor](https://via.placeholder.com/400x300?text=Code+Editor) | ![Flowchart](https://via.placeholder.com/400x300?text=Flowchart) |
 
 ## 🛠️ Tech Stack
 
@@ -51,17 +40,17 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/code-to-flowchart.git
+   git clone https://github.com/dhishan9/code-to-flowchart.git
    cd code-to-flowchart
    ```
 
 2. **Set up Tree-sitter parsers**
    ```bash
-   # Download the required parser files
+   # Create parsers directory
    mkdir -p parsers
    # Place tree-sitter-python.wasm and tree-sitter-c.wasm in the parsers/ folder
    ```
-   > **Note**: You can find the parser files in the [releases section](https://github.com/yourusername/code-to-flowchart/releases) or build them yourself using the Tree-sitter CLI.
+   > **Note**: You can find the parser files in the [releases section](https://github.com/dhishan9/code-to-flowchart/releases) or build them yourself using the Tree-sitter CLI.
 
 3. **Open the application**
    - Simply open `flow.html` in your browser
@@ -214,13 +203,20 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 **Dhishan** — CSE Student & Developer
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Project Link: [https://github.com/yourusername/code-to-flowchart](https://github.com/yourusername/code-to-flowchart)
+- GitHub: [@dhishan9](https://github.com/dhishan9)
+- Project Link: [https://github.com/dhishan9/code-to-flowchart](https://github.com/dhishan9/code-to-flowchart)
 
 ---
 
 <p align="center">
   Made with ☕ and 🧠 by Dhishan
 </p>
+```
 
----
+Just copy this entire block and paste it into your `README.md` file. Don't forget to:
+
+1. **Add a screenshot** — Replace the placeholder comment with an actual screenshot of your tool in action
+2. **Create a LICENSE file** — If you haven't already, add an MIT license file to your repo
+3. **Add the parser files** — Make sure your `parsers/` folder has the WASM files
+
+Want me to also give you a **LICENSE file** code or help with setting up **GitHub Pages** so you can host the live demo? 🚀
