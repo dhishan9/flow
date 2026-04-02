@@ -1,6 +1,5 @@
-Absolutely, Dhishan! Here's the complete README code you can copy and paste directly into your `README.md` file:
 
-```markdown
+```
 # Code to Flowchart 🔄
 
 > **Transform your Python and C code into beautiful, interactive flowcharts instantly**
@@ -204,7 +203,7 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 **Dhishan** — CSE Student & Developer
 
 - GitHub: [@dhishan9](https://github.com/dhishan9)
-- Project Link: [https://github.com/dhishan9/code-to-flowchart](https://github.com/dhishan9/code-to-flowchart)
+- Project Link: [https://github.com/dhishan9/flow](https://github.com/dhishan9/flow)
 
 ---
 
@@ -212,11 +211,3 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
   Made with ☕ and 🧠 by Dhishan
 </p>
 ```
-
-Just copy this entire block and paste it into your `README.md` file. Don't forget to:
-
-1. **Add a screenshot** — Replace the placeholder comment with an actual screenshot of your tool in action
-2. **Create a LICENSE file** — If you haven't already, add an MIT license file to your repo
-3. **Add the parser files** — Make sure your `parsers/` folder has the WASM files
-
-Want me to also give you a **LICENSE file** code or help with setting up **GitHub Pages** so you can host the live demo? 🚀
