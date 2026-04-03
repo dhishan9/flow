@@ -46,25 +46,21 @@
         ::-webkit-scrollbar-thumb:hover { background: #484848; }
         #inputCode { resize: none; tab-size: 4; outline: none; }
         
-        /* --- NEW: Cohesive Dark Mode Flowchart --- */
-        
-       /* 1. Solid dark shapes with blue borders */
+        /* Dark Mode Flowchart */
         html.dark .mermaid .node rect,
         html.dark .mermaid .node polygon,
         html.dark .mermaid .node circle,
         html.dark .mermaid .node path {
-            fill: #131313 !important; /* THE FIX: Solid dark background instead of transparent */
+            fill: #131313 !important;
             stroke: #aec6ff !important;
             stroke-width: 1.5px !important;
         }
 
-        /* 2. White text inside the main nodes */
         html.dark .mermaid .node .label {
             color: #e7e5e4 !important;
             fill: #e7e5e4 !important;
         }
 
-        /* 3. Blue connection lines and arrows */
         html.dark .mermaid .edgePath path,
         html.dark .mermaid path.path { 
             stroke: #aec6ff !important; 
@@ -74,9 +70,7 @@
             stroke: none !important; 
         }
 
-        /* 4. Fix the unreadable True/False edge labels */
         html.dark .mermaid .edgeLabel rect {
-            /* We use the dark background color instead of transparent so the line doesn't strike through the text! */
             fill: #131313 !important; 
             stroke: none !important;
         }
@@ -86,6 +80,20 @@
             fill: #aec6ff !important;
             background-color: transparent !important; 
         }
+
+        /* Animation for notifications */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
         }
     </style>
 </head>
@@ -99,7 +107,7 @@
             <span class="text-xl font-bold tracking-tighter text-[#aec6ff] ml-2">Code to Flowchart</span>
         </div>
         <div class="flex items-center gap-4">
-            <button class="p-2 text-[#acabaa] hover:bg-[#2c2c2c] transition-colors duration-200 rounded-lg active:scale-95 transition-transform" id="themeToggle">
+            <button class="p-2 text-[#acabaa] hover:bg-[#2c2c2c] transition-colors duration-200 rounded-lg active:scale-95" id="themeToggle">
                 <span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
             </button>
         </div>
@@ -109,16 +117,20 @@
         
         <aside id="sidebar" class="bg-[#131313] border-r border-outline-variant/10 flex flex-col z-40 overflow-hidden" style="width: 16rem; transition: all 0.3s ease;">
             <div class="p-6" style="min-width: 16rem;">
-                <button class="w-full bg-primary text-on-primary font-bold py-3 rounded-lg flex items-center justify-center gap-2 active:scale-95 transition-all text-xs uppercase tracking-widest shadow-lg shadow-primary/10">
+                <button id="newProjectBtn" class="w-full bg-primary text-on-primary font-bold py-3 rounded-lg flex items-center justify-center gap-2 active:scale-95 transition-all text-xs uppercase tracking-widest shadow-lg shadow-primary/10">
                     <span class="material-symbols-outlined text-[18px]">add</span> New Project
                 </button>
             </div>
-            <div class="flex-1 overflow-y-auto px-4 space-y-8 pb-8" style="min-width: 16rem;">
-                <div class="space-y-1">
-                    <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-widest px-2 mb-3">Saved Projects</p>
-                    <a class="group text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest rounded-lg flex items-center justify-between px-3 py-2.5 transition-all text-xs" href="#">
-                        <span class="truncate">Authentication Flow</span>
-                    </a>
+            <div class="flex-1 overflow-y-auto px-4 pb-8" style="min-width: 16rem;">
+                <!-- History Section -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between px-2">
+                        <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">History</p>
+                        <span class="text-[9px] text-primary/60" id="historyCount"></span>
+                    </div>
+                    <div id="historyContainer" class="space-y-1 max-h-[60vh] overflow-y-auto">
+                        <!-- History items will appear here -->
+                    </div>
                 </div>
             </div>
             <div class="p-6 border-t border-outline-variant/5" style="min-width: 16rem;">
