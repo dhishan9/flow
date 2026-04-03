@@ -167,3 +167,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <p align="center">
 Made with ☕ and 🧠 by Dhishan
 </p>
+## Live Demo
+
+Try it here: [https://dhishan9.github.io/flow/](https://dhishan9.github.io/flow/)
+
+---
+
+## License
+
+MIT © [Dhishan](https://github.com/dhishan9)
