@@ -1,15 +1,14 @@
 
-```
-# Code to Flowchart 🔄
+# Code to Flowchart
 
 > **Transform your Python and C code into beautiful, interactive flowcharts instantly**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Made with](https://img.shields.io/badge/Made%20with-Tree--sitter-blue)](https://tree-sitter.github.io/tree-sitter/)
-[![UI](https://img.shields.io/badge/UI-TailwindCSS-06B6D4)](https://tailwindcss.com/)
-[![Diagrams](https://img.shields.io/badge/Diagrams-Mermaid.js-FF3670)](https://mermaid.js.org/)
+[![Made with Tree-sitter](https://img.shields.io/badge/Made%20with-Tree--sitter-blue.svg)](https://tree-sitter.github.io/tree-sitter/)
+[![UI TailwindCSS](https://img.shields.io/badge/UI-TailwindCSS-06B6D4.svg)](https://tailwindcss.com/)
+[![Diagrams Mermaid.js](https://img.shields.io/badge/Diagrams-Mermaid.js-FF3670.svg)](https://mermaid.js.org/)
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---------|-------------|
@@ -21,7 +20,7 @@
 | 🔗 **Live Preview** | Flowchart updates in real-time as you code |
 | 🌙 **Dark Mode** | Easy on the eyes for those late-night coding sessions |
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: HTML5, TailwindCSS, JavaScript (ES6+)
 - **Parsing**: [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) (Python & C grammars)
@@ -29,34 +28,30 @@
 - **Storage**: LocalStorage API
 - **Icons**: Material Symbols
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 - A modern web browser (Chrome, Firefox, Safari, Edge)
 - No server required — runs entirely in the browser!
 
 ### Quick Start
-```
+
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/dhishan9/code-to-flowchart.git
-   cd code-to-flowchart
+   git clone https://github.com/dhishan9/flow.git
+   cd flow
    ```
 
 2. **Set up Tree-sitter parsers**
    ```bash
-   # Create parsers directory
    mkdir -p parsers
-   # Place tree-sitter-python.wasm and tree-sitter-c.wasm in the parsers/ folder
    ```
-   > **Note**: You can find the parser files in the [releases section](https://github.com/dhishan9/code-to-flowchart/releases) or build them yourself using the Tree-sitter CLI.
+   Place `tree-sitter-python.wasm` and `tree-sitter-c.wasm` in the `parsers/` folder.
 
 3. **Open the application**
    - Simply open `flow.html` in your browser
-   - Or serve locally with any static server:
+   - Or serve locally:
      ```bash
-     npx serve .
-     # or
      python -m http.server 8000
      ```
 
@@ -65,7 +60,7 @@
    - Click "Update Flowchart"
    - Watch your logic come to life
 
-## 🎯 Usage Examples
+## Usage Examples
 
 ### Python Example
 ```python
@@ -97,42 +92,28 @@ int main() {
 }
 ```
 
-## 🧠 How It Works
-
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│  Your Code  │ ──▶ │ Tree-sitter  │ ──▶ │   Mermaid   │
-│  (Python/C) │     │   AST Parser │     │   Diagram   │
-└─────────────┘     └──────────────┘     └─────────────┘
-                            │                    │
-                            ▼                    ▼
-                    ┌──────────────┐     ┌─────────────┐
-                    │ Node Traversal│     │  Interactive│
-                    │ & Classification│   │  Flowchart  │
-                    └──────────────┘     └─────────────┘
-```
+## How It Works
 
 1. **Code Input** → Your code is captured from the editor
 2. **AST Parsing** → Tree-sitter builds an Abstract Syntax Tree
-3. **Node Traversal** → The tree is traversed and each node is classified (condition, loop, I/O, etc.)
+3. **Node Traversal** → The tree is traversed and each node is classified
 4. **Mermaid Generation** → Nodes and edges are converted to Mermaid syntax
 5. **Rendering** → Mermaid renders the interactive flowchart
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-code-to-flowchart/
+flow/
 ├── flow.html           # Main application UI
 ├── app.js              # Core logic (parsing, rendering, history)
 ├── parsers/            # Tree-sitter WASM files
 │   ├── tree-sitter-python.wasm
 │   └── tree-sitter-c.wasm
-├── assets/             # Images, icons, etc.
-├── README.md           # You are here
-└── LICENSE             # MIT License
+├── README.md
+└── LICENSE
 ```
 
-## 🔧 Roadmap
+## Roadmap
 
 ### ✅ Completed
 - [x] Python parser integration
@@ -149,58 +130,34 @@ code-to-flowchart/
 
 ### 📅 Planned
 - [ ] Drag-and-drop file upload
-- [ ] Shareable links (save to cloud)
+- [ ] Shareable links
 - [ ] Code syntax highlighting
 - [ ] Real-time update as you type
 - [ ] Multi-file project support
-- [ ] Flowchart customization (colors, layout)
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are welcome! Here's how you can help:
+Contributions are welcome!
 
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Commit your changes**
-   ```bash
-   git commit -m 'Add some amazing feature'
-   ```
-4. **Push to the branch**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-5. **Open a Pull Request**
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Areas for Contribution
-- Add support for more languages (JavaScript, Java, Go, Rust)
-- Improve node classification for complex structures
-- Enhance flowchart styling and layout
-- Add testing suite
-- Performance optimizations
+## License
 
-## 🐛 Known Issues
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- Nested conditionals may produce overlapping edges (improving this)
-- Very large codebases (>500 lines) may impact performance
-- C preprocessor directives are stripped for cleaner parsing
+## Acknowledgments
 
-## 📄 License
+- [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)
+- [Mermaid.js](https://mermaid.js.org/)
+- [TailwindCSS](https://tailwindcss.com/)
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+## Contact
 
-## 🙏 Acknowledgments
-
-- [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for the incredible parsing engine
-- [Mermaid.js](https://mermaid.js.org/) for beautiful diagram rendering
-- [TailwindCSS](https://tailwindcss.com/) for the sleek UI
-- All contributors and users of this project
-
-## 📬 Contact
-
-**Dhishan** — CSE Student & Developer
+**Dhishan** — CSE Student
 
 - GitHub: [@dhishan9](https://github.com/dhishan9)
 - Project Link: [https://github.com/dhishan9/flow](https://github.com/dhishan9/flow)
@@ -208,5 +165,5 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 ---
 
 <p align="center">
-  Made with ☕ and 🧠 by Dhishan
+Made with ☕ and 🧠 by Dhishan
 </p>
