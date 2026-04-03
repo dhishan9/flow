@@ -169,7 +169,7 @@ Made with ☕ and 🧠 by Dhishan
 </p>
 ## Live Demo
 
-Try it here: [https://dhishan9.github.io/flow/](https://dhishan9.github.io/flow/)
+Try it here: [https://dhishan9.github.io/flow/](https://dhishan9.github.io/flow/flow.html)
 
 ---
 
