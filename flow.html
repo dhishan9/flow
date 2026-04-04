@@ -36,6 +36,13 @@
         }
     </script>
 
+    <!-- CodeMirror 5 CSS + JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
@@ -44,7 +51,16 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #252626; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #484848; }
-        #inputCode { resize: none; tab-size: 4; outline: none; }
+        
+        /* CodeMirror container */
+        #code-editor {
+            height: 100%;
+            width: 100%;
+        }
+        .CodeMirror {
+            height: 100%;
+            border-radius: 0.75rem;
+        }
         
         /* Dark Mode Flowchart */
         html.dark .mermaid .node rect,
@@ -81,7 +97,6 @@
             background-color: transparent !important; 
         }
 
-        /* Animation for notifications */
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -95,6 +110,27 @@
         .animate-slide-in {
             animation: slideIn 0.3s ease-out;
         }
+        
+        /* Make source code section scrollable */
+        section:first-of-type {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        section:first-of-type .relative.flex-1.group {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        #code-editor {
+            height: 100%;
+            overflow: auto;
+        }
+        .CodeMirror {
+            height: 100%;
+        }
     </style>
 </head>
 <body class="bg-surface text-on-surface antialiased overflow-hidden h-screen flex flex-col">
@@ -102,13 +138,13 @@
     <header class="bg-[#131313] text-[#aec6ff] border-b border-outline-variant/10 flex justify-between items-center px-6 h-16 w-full z-50">
         <div class="flex items-center gap-4">
             <button class="p-2 text-[#acabaa] hover:bg-[#2c2c2c] transition-colors duration-200 rounded-lg active:scale-95" id="toggleSidebarBtn">
-                <span class="material-symbols-outlined" data-icon="menu">menu</span>
+                <span class="material-symbols-outlined">menu</span>
             </button>
             <span class="text-xl font-bold tracking-tighter text-[#aec6ff] ml-2">Code to Flowchart</span>
         </div>
         <div class="flex items-center gap-4">
             <button class="p-2 text-[#acabaa] hover:bg-[#2c2c2c] transition-colors duration-200 rounded-lg active:scale-95" id="themeToggle">
-                <span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+                <span class="material-symbols-outlined">dark_mode</span>
             </button>
         </div>
     </header>
@@ -122,14 +158,13 @@
                 </button>
             </div>
             <div class="flex-1 overflow-y-auto px-4 pb-8" style="min-width: 16rem;">
-                <!-- History Section -->
                 <div class="space-y-4">
                     <div class="flex items-center justify-between px-2">
                         <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-widest">History</p>
                         <span class="text-[9px] text-primary/60" id="historyCount"></span>
                     </div>
                     <div id="historyContainer" class="space-y-1 max-h-[60vh] overflow-y-auto">
-                        <!-- History items will appear here -->
+                        <!-- History items -->
                     </div>
                 </div>
             </div>
@@ -150,7 +185,10 @@
                     </div>
                     <div class="relative flex-1 group">
                         <div class="absolute inset-0 bg-primary/5 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none rounded-xl"></div>
-                        <textarea class="w-full h-full bg-surface-container-low text-on-surface font-mono text-sm p-6 rounded-xl border border-outline-variant/10 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-on-surface-variant/30" id="inputCode" spellcheck="false">def factorial_recursive(n):
+                        <!-- CodeMirror container -->
+                        <div id="code-editor" class="w-full h-full rounded-xl overflow-hidden border border-outline-variant/10"></div>
+                        <!-- Hidden textarea to keep compatibility with existing app.js -->
+                        <textarea id="inputCode" style="display: none;">def factorial_recursive(n):
     if n < 0:
         return "Not defined for negative numbers"
     elif n == 0 or n == 1:
@@ -167,10 +205,10 @@ print(f"The factorial of {number} is {factorial_recursive(number)}")</textarea>
                                 <option value="python">Python</option>
                                 <option value="c">C Language</option>
                             </select>
-                            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-sm" data-icon="expand_more">expand_more</span>
+                            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-sm">expand_more</span>
                         </div>
                         <button class="flex-[2] bg-gradient-to-r from-primary to-primary-dim text-on-primary font-bold text-xs py-3 px-6 rounded-lg shadow-lg shadow-primary/10 active:scale-95 transition-all flex items-center justify-center gap-2" id="updateBtn">
-                            <span class="material-symbols-outlined text-[18px]" data-icon="sync">sync</span> Update Flowchart
+                            <span class="material-symbols-outlined text-[18px]">sync</span> Update Flowchart
                         </button>
                     </div>
                 </section>
@@ -180,44 +218,42 @@ print(f"The factorial of {number} is {factorial_recursive(number)}")</textarea>
                         <h3 class="text-on-surface-variant text-[10px] font-black uppercase tracking-widest">Visualization</h3>
                     </div>
                     <div class="flex-1 bg-surface-container rounded-2xl relative overflow-hidden flex items-center justify-center border border-outline-variant/5 shadow-inner" id="graph-output">
-    <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#aec6ff 1px, transparent 0); background-size: 24px 24px;"></div>
-    
-    <div class="w-full h-full overflow-auto p-6" id="chart-container" style="display: block;">
-        <div id="empty-state" class="flex flex-col items-center justify-center text-center h-full max-w-xs mx-auto animate-in fade-in duration-700">
-            <div class="w-16 h-16 rounded-3xl bg-surface-container-highest flex items-center justify-center mb-4 shadow-xl">
-                <span class="material-symbols-outlined text-3xl text-primary/40" data-icon="schema">schema</span>
-            </div>
-            <p class="text-on-surface-variant text-xs font-medium leading-relaxed">
-                Your flowchart will appear here. Paste your logic and click update to visualize.
-            </p>
-        </div>
-    </div>
+                        <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#aec6ff 1px, transparent 0); background-size: 24px 24px;"></div>
+                        
+                        <div class="w-full h-full overflow-auto p-6" id="chart-container" style="display: block;">
+                            <div id="empty-state" class="flex flex-col items-center justify-center text-center h-full max-w-xs mx-auto animate-in fade-in duration-700">
+                                <div class="w-16 h-16 rounded-3xl bg-surface-container-highest flex items-center justify-center mb-4 shadow-xl">
+                                    <span class="material-symbols-outlined text-3xl text-primary/40">schema</span>
+                                </div>
+                                <p class="text-on-surface-variant text-xs font-medium leading-relaxed">
+                                    Your flowchart will appear here. Paste your logic and click update to visualize.
+                                </p>
+                            </div>
+                        </div>
 
-    <div class="hidden absolute inset-0 bg-surface-container/80 backdrop-blur-md flex items-center justify-center z-20" id="loader-overlay">
-        <div class="flex flex-col items-center">
-            <div class="relative w-12 h-12">
-                <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
-            </div>
-            <span class="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-primary">Generating Graph...</span>
-        </div>
-    </div>
-
-    <!-- PAN/ZOOM CONTROLS (added) -->
-    <div class="absolute bottom-4 right-4 z-10 flex gap-2 bg-surface-container/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-outline-variant/20">
-        <button id="zoomInBtn" class="p-2 bg-surface-container-highest hover:bg-primary/20 rounded-lg transition-all active:scale-95" title="Zoom In">
-            <span class="material-symbols-outlined text-lg">zoom_in</span>
-        </button>
-        <button id="zoomOutBtn" class="p-2 bg-surface-container-highest hover:bg-primary/20 rounded-lg transition-all active:scale-95" title="Zoom Out">
-            <span class="material-symbols-outlined text-lg">zoom_out</span>
-        </button>
-        <button id="resetViewBtn" class="p-2 bg-surface-container-highest hover:bg-primary/20 rounded-lg transition-all active:scale-95" title="Reset View">
-            <span class="material-symbols-outlined text-lg">center_focus_strong</span>
-        </button>
-    </div>
-</div>
+                        <div class="hidden absolute inset-0 bg-surface-container/80 backdrop-blur-md flex items-center justify-center z-20" id="loader-overlay">
+                            <div class="flex flex-col items-center">
+                                <div class="relative w-12 h-12">
+                                    <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+                                    <div class="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+                                </div>
+                                <span class="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-primary">Generating Graph...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pan/Zoom controls -->
+                    <div class="absolute bottom-4 right-4 z-10 flex gap-2 bg-surface-container/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-outline-variant/20">
+                        <button id="zoomInBtn" class="p-2 bg-surface-container-highest hover:bg-primary/20 rounded-lg transition-all active:scale-95" title="Zoom In">
+                            <span class="material-symbols-outlined text-lg">zoom_in</span>
+                        </button>
+                        <button id="zoomOutBtn" class="p-2 bg-surface-container-highest hover:bg-primary/20 rounded-lg transition-all active:scale-95" title="Zoom Out">
+                            <span class="material-symbols-outlined text-lg">zoom_out</span>
+                        </button>
+                        <button id="resetViewBtn" class="p-2 bg-surface-container-highest hover:bg-primary/20 rounded-lg transition-all active:scale-95" title="Reset View">
+                            <span class="material-symbols-outlined text-lg">center_focus_strong</span>
+                        </button>
+                    </div>
                 </section>
-
             </div>
         </main>
     </div>
@@ -225,5 +261,66 @@ print(f"The factorial of {number} is {factorial_recursive(number)}")</textarea>
     <script src="https://cdn.jsdelivr.net/npm/web-tree-sitter@0.20.8/tree-sitter.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10.2.4/dist/mermaid.min.js"></script>
     <script src="app.js"></script>
+
+    <!-- CodeMirror 5 initialization (must run after app.js) -->
+    <script>
+    (function() {
+        let editor = null;
+        const textarea = document.getElementById('inputCode');
+        const langSelect = document.getElementById('langSelect');
+
+        function initEditor() {
+            if (!textarea) return;
+            let initialCode = textarea.value;
+            let initialLang = langSelect.value;
+
+            const mode = initialLang === 'python' ? 'python' : 'text/x-csrc';
+            const editorElement = document.getElementById('code-editor');
+            if (!editorElement) return;
+
+            editor = CodeMirror(editorElement, {
+                value: initialCode,
+                mode: mode,
+                theme: 'material-darker',
+                lineNumbers: true,
+                autoCloseBrackets: true,
+                indentUnit: 4,
+                lineWrapping: true
+            });
+            window.globalEditor = editor;
+
+            editor.on('change', () => {
+                textarea.value = editor.getValue();
+                textarea.dispatchEvent(new Event('input'));
+            });
+        }
+
+        // Expose a function to update the editor from outside (app.js)
+        window.updateEditorContent = function(code, language) {
+            if (!editor) {
+                // Editor not ready yet – store for later init
+                window._pendingEditorUpdate = { code, language };
+                return;
+            }
+            const mode = language === 'python' ? 'python' : 'text/x-csrc';
+            editor.setOption('mode', mode);
+            if (editor.getValue() !== code) {
+                editor.setValue(code);
+            }
+            // Also update the hidden textarea
+            if (textarea) textarea.value = code;
+            if (langSelect) langSelect.value = language;
+        };
+
+        window.addEventListener('load', () => {
+            initEditor();
+            // If there was a pending update from before editor was ready, apply it now
+            if (window._pendingEditorUpdate) {
+                window.updateEditorContent(window._pendingEditorUpdate.code, window._pendingEditorUpdate.language);
+                delete window._pendingEditorUpdate;
+            }
+        });
+    })();
+</script>
 </body>
 </html>
