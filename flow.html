@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Code to Flowchart | Monolith V1.0.2</title>
+    <title>Code to Flowchart | flow V1.0.2</title>
     
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
@@ -135,7 +135,7 @@
             </div>
             <div class="p-6 border-t border-outline-variant/5" style="min-width: 16rem;">
                 <div class="mb-2">
-                    <h2 class="text-sm font-black text-white">Monolith</h2>
+                    <h2 class="text-sm font-black text-white">flow</h2>
                     <p class="text-[10px] text-on-surface-variant font-medium">V1.0.2</p>
                 </div>
             </div>
@@ -180,29 +180,42 @@ print(f"The factorial of {number} is {factorial_recursive(number)}")</textarea>
                         <h3 class="text-on-surface-variant text-[10px] font-black uppercase tracking-widest">Visualization</h3>
                     </div>
                     <div class="flex-1 bg-surface-container rounded-2xl relative overflow-hidden flex items-center justify-center border border-outline-variant/5 shadow-inner" id="graph-output">
-                        <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#aec6ff 1px, transparent 0); background-size: 24px 24px;"></div>
-                        
-                        <div class="w-full h-full overflow-auto p-6" id="chart-container" style="display: block;">
-                            <div id="empty-state" class="flex flex-col items-center justify-center text-center h-full max-w-xs mx-auto animate-in fade-in duration-700">
-                                <div class="w-16 h-16 rounded-3xl bg-surface-container-highest flex items-center justify-center mb-4 shadow-xl">
-                                    <span class="material-symbols-outlined text-3xl text-primary/40" data-icon="schema">schema</span>
-                                </div>
-                                <p class="text-on-surface-variant text-xs font-medium leading-relaxed">
-                                    Your flowchart will appear here. Paste your logic and click update to visualize.
-                                </p>
-                            </div>
-                        </div>
+    <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#aec6ff 1px, transparent 0); background-size: 24px 24px;"></div>
+    
+    <div class="w-full h-full overflow-auto p-6" id="chart-container" style="display: block;">
+        <div id="empty-state" class="flex flex-col items-center justify-center text-center h-full max-w-xs mx-auto animate-in fade-in duration-700">
+            <div class="w-16 h-16 rounded-3xl bg-surface-container-highest flex items-center justify-center mb-4 shadow-xl">
+                <span class="material-symbols-outlined text-3xl text-primary/40" data-icon="schema">schema</span>
+            </div>
+            <p class="text-on-surface-variant text-xs font-medium leading-relaxed">
+                Your flowchart will appear here. Paste your logic and click update to visualize.
+            </p>
+        </div>
+    </div>
 
-                        <div class="hidden absolute inset-0 bg-surface-container/80 backdrop-blur-md flex items-center justify-center z-20" id="loader-overlay">
-                            <div class="flex flex-col items-center">
-                                <div class="relative w-12 h-12">
-                                    <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
-                                    <div class="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
-                                </div>
-                                <span class="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-primary">Generating Graph...</span>
-                            </div>
-                        </div>
-                    </div>
+    <div class="hidden absolute inset-0 bg-surface-container/80 backdrop-blur-md flex items-center justify-center z-20" id="loader-overlay">
+        <div class="flex flex-col items-center">
+            <div class="relative w-12 h-12">
+                <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+            </div>
+            <span class="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-primary">Generating Graph...</span>
+        </div>
+    </div>
+
+    <!-- PAN/ZOOM CONTROLS (added) -->
+    <div class="absolute bottom-4 right-4 z-10 flex gap-2 bg-surface-container/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-outline-variant/20">
+        <button id="zoomInBtn" class="p-2 bg-surface-container-highest hover:bg-primary/20 rounded-lg transition-all active:scale-95" title="Zoom In">
+            <span class="material-symbols-outlined text-lg">zoom_in</span>
+        </button>
+        <button id="zoomOutBtn" class="p-2 bg-surface-container-highest hover:bg-primary/20 rounded-lg transition-all active:scale-95" title="Zoom Out">
+            <span class="material-symbols-outlined text-lg">zoom_out</span>
+        </button>
+        <button id="resetViewBtn" class="p-2 bg-surface-container-highest hover:bg-primary/20 rounded-lg transition-all active:scale-95" title="Reset View">
+            <span class="material-symbols-outlined text-lg">center_focus_strong</span>
+        </button>
+    </div>
+</div>
                 </section>
 
             </div>
