@@ -122,10 +122,10 @@ flow/
 - [x] Auto-save drafts
 - [x] History panel with localStorage
 - [x] Basic flowchart generation
-
+- [x] Zoom and pan on flowchart
 ### 🚧 In Progress
 - [ ] JavaScript/TypeScript support
-- [ ] Zoom and pan on flowchart
+
 - [ ] Export as PNG/SVG/PDF
 
 ### 📅 Planned
