@@ -1,6 +1,18 @@
+// ============================================================================
+//  CODE TO FLOWCHART - COMPLETE APP.JS (with Pan, Zoom, History, Parser)
+// ============================================================================
+//  This file handles:
+//    - Tree-sitter parsing (Python & C)
+//    - Mermaid flowchart generation
+//    - Auto‑save & history panel (localStorage)
+//    - Dark mode toggle
+//    - Interactive pan & zoom (mouse drag + scroll + buttons)
+// ============================================================================
+
 console.log("🚀 App.js is loaded and running!");
 
-// ========== HISTORY MANAGEMENT CLASS ==========
+// ========================== HISTORY MANAGER ==========================
+// Stores last 10 flowcharts in localStorage, displays them in sidebar.
 class HistoryManager {
     constructor() {
         this.maxHistoryItems = 10;
@@ -14,7 +26,6 @@ class HistoryManager {
 
     saveToHistory(code, language, preview) {
         let history = this.getHistory();
-        
         const newItem = {
             id: Date.now(),
             code: code,
@@ -25,17 +36,10 @@ class HistoryManager {
             time: new Date().toLocaleTimeString()
         };
 
-        const isDuplicate = history.some(item => 
-            item.code === code && item.language === language
-        );
-
+        const isDuplicate = history.some(item => item.code === code && item.language === language);
         if (!isDuplicate) {
             history.unshift(newItem);
-            
-            if (history.length > this.maxHistoryItems) {
-                history = history.slice(0, this.maxHistoryItems);
-            }
-            
+            if (history.length > this.maxHistoryItems) history = history.slice(0, this.maxHistoryItems);
             localStorage.setItem(this.storageKey, JSON.stringify(history));
             this.renderHistory();
         }
@@ -58,17 +62,10 @@ class HistoryManager {
     loadHistoryItem(item) {
         const input = document.getElementById('inputCode');
         const langSelect = document.getElementById('langSelect');
-        
         input.value = item.code;
         langSelect.value = item.language;
-        
-        const event = new Event('input');
-        input.dispatchEvent(event);
-        
-        setTimeout(() => {
-            document.getElementById('updateBtn').click();
-        }, 100);
-        
+        input.dispatchEvent(new Event('input'));
+        setTimeout(() => document.getElementById('updateBtn').click(), 100);
         this.showNotification('✅ Loaded: ' + item.preview);
     }
 
@@ -76,69 +73,43 @@ class HistoryManager {
         const historyContainer = document.getElementById('historyContainer');
         const historyCount = document.getElementById('historyCount');
         if (!historyContainer) return;
-
         const history = this.getHistory();
-        
-        if (historyCount) {
-            historyCount.textContent = `${history.length}/${this.maxHistoryItems}`;
-        }
-        
+        if (historyCount) historyCount.textContent = `${history.length}/${this.maxHistoryItems}`;
         if (history.length === 0) {
-            historyContainer.innerHTML = `
-                <div class="text-center py-8">
-                    <span class="material-symbols-outlined text-3xl text-on-surface-variant/30">history</span>
-                    <p class="text-xs text-on-surface-variant/50 mt-2">No history yet</p>
-                    <p class="text-[10px] text-on-surface-variant/30">Your flowcharts will appear here</p>
-                </div>
-            `;
+            historyContainer.innerHTML = `<div class="text-center py-8">
+                <span class="material-symbols-outlined text-3xl text-on-surface-variant/30">history</span>
+                <p class="text-xs text-on-surface-variant/50 mt-2">No history yet</p>
+                <p class="text-[10px] text-on-surface-variant/30">Your flowcharts will appear here</p>
+            </div>`;
             return;
         }
-
-        historyContainer.innerHTML = `
-            <div class="space-y-2">
-                ${history.map(item => `
-                    <div class="group bg-surface-container-highest/30 hover:bg-surface-container-highest rounded-lg p-3 transition-all cursor-pointer" data-id="${item.id}">
-                        <div class="flex items-start justify-between gap-2">
-                            <div class="flex-1 min-w-0 load-history-item" data-id='${JSON.stringify(item)}'>
-                                <p class="text-xs font-medium text-on-surface truncate">${this.escapeHtml(item.preview)}</p>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-[10px] text-primary/70 uppercase font-bold">${item.language}</span>
-                                    <span class="text-[9px] text-on-surface-variant/50">${item.date}</span>
-                                </div>
+        historyContainer.innerHTML = `<div class="space-y-2">
+            ${history.map(item => `
+                <div class="group bg-surface-container-highest/30 hover:bg-surface-container-highest rounded-lg p-3 transition-all cursor-pointer" data-id="${item.id}">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex-1 min-w-0 load-history-item" data-id='${JSON.stringify(item)}'>
+                            <p class="text-xs font-medium text-on-surface truncate">${this.escapeHtml(item.preview)}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[10px] text-primary/70 uppercase font-bold">${item.language}</span>
+                                <span class="text-[9px] text-on-surface-variant/50">${item.date}</span>
                             </div>
-                            <button class="delete-history opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant/50 hover:text-error p-1" data-id="${item.id}">
-                                <span class="material-symbols-outlined text-sm">delete</span>
-                            </button>
                         </div>
+                        <button class="delete-history opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant/50 hover:text-error p-1" data-id="${item.id}">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                        </button>
                     </div>
-                `).join('')}
-                ${history.length > 0 ? `
-                    <button id="clearAllHistory" class="w-full mt-4 text-center text-xs text-on-surface-variant/60 hover:text-error transition-colors py-2">
-                        Clear All History
-                    </button>
-                ` : ''}
-            </div>
-        `;
-
+                </div>
+            `).join('')}
+            ${history.length > 0 ? `<button id="clearAllHistory" class="w-full mt-4 text-center text-xs text-on-surface-variant/60 hover:text-error transition-colors py-2">Clear All History</button>` : ''}
+        </div>`;
         document.querySelectorAll('.delete-history').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = parseInt(btn.dataset.id);
-                this.deleteHistoryItem(id);
-            });
+            btn.addEventListener('click', (e) => { e.stopPropagation(); this.deleteHistoryItem(parseInt(btn.dataset.id)); });
         });
-
         document.querySelectorAll('.load-history-item').forEach(el => {
-            el.addEventListener('click', () => {
-                const item = JSON.parse(el.dataset.id);
-                this.loadHistoryItem(item);
-            });
+            el.addEventListener('click', () => { this.loadHistoryItem(JSON.parse(el.dataset.id)); });
         });
-
         const clearBtn = document.getElementById('clearAllHistory');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => this.clearHistory());
-        }
+        if (clearBtn) clearBtn.addEventListener('click', () => this.clearHistory());
     }
 
     showNotification(message) {
@@ -146,10 +117,7 @@ class HistoryManager {
         notification.className = 'fixed bottom-4 right-4 bg-surface-container-highest text-on-surface px-4 py-2 rounded-lg shadow-lg text-sm z-50 animate-slide-in';
         notification.textContent = message;
         document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.remove();
-        }, 2000);
+        setTimeout(() => notification.remove(), 2000);
     }
 
     escapeHtml(text) {
@@ -159,7 +127,8 @@ class HistoryManager {
     }
 }
 
-// ========== PREPROCESS C CODE ==========
+// ========================== C PREPROCESSOR ==========================
+// Removes preprocessor directives (#include, #define, #if, #endif) so Tree-sitter parses cleanly.
 function preprocessCCode(code) {
     let cleaned = code.replace(/^#include.*$/gm, '');
     cleaned = cleaned.replace(/^#define.*$/gm, '');
@@ -168,44 +137,36 @@ function preprocessCCode(code) {
     return cleaned;
 }
 
-// ========== OUR CUSTOM SMART MERMAID GENERATOR ==========
+// ========================== MERMAID GENERATOR ==========================
+// Converts Tree-sitter AST into Mermaid flowchart syntax.
 function generateMermaid(rootNode) {
-    let code = "graph TD\n"; 
+    let code = "graph TD\n";
     let idCounter = 0;
 
-    // THE FIX: Bulletproof text cleaner
+    // Bulletproof text cleaner: removes characters that break Mermaid syntax.
     function clean(text) {
         if (!text) return "Node";
         let str = text.split('\n')[0];
-        // Aggressively remove quotes, brackets, and slashes that crash Mermaid
         str = str.replace(/["'`\\/\[\]{}()|]/g, " ");
-        // Collapse multiple spaces into one
         str = str.replace(/\s+/g, " ").trim();
-        // Truncate if too long
         if (str.length > 40) str = str.substring(0, 40) + "...";
         return str || "Action";
     }
 
     let functions = [];
     let mainNodes = [];
-
     for (let i = 0; i < rootNode.childCount; i++) {
         const child = rootNode.child(i);
         if (!child.isNamed) continue;
-
-        if (child.type === 'function_definition') {
-            functions.push(child);
-        } else {
-            mainNodes.push(child);
-        }
+        if (child.type === 'function_definition') functions.push(child);
+        else mainNodes.push(child);
     }
 
     function buildFlow(name, nodesArray, isMain) {
-        let flowCode = ""; 
+        let flowCode = "";
         let prefix = `flow_${idCounter++}`;
         let startId = `${prefix}_START`;
         let stopId = `${prefix}_STOP`;
-
         let startLabel = isMain ? "Start" : `${clean(name)}`;
         flowCode += `  ${startId}([${startLabel}])\n`;
 
@@ -217,7 +178,7 @@ function generateMermaid(rootNode) {
             if (!from || !to) return;
             const link = label ? `-->|${label}|` : "-->";
             flowCode += `  ${from} ${link} ${to}\n`;
-            edges.push(from); 
+            edges.push(from);
         }
 
         function walk(n, parentId = null, edgeLabel = "") {
@@ -229,7 +190,7 @@ function generateMermaid(rootNode) {
 
             if (type === 'return_statement') {
                 registeredNodes.add(currentId);
-                flowCode += `  ${currentId}([${labelText}])\n`; 
+                flowCode += `  ${currentId}([${labelText}])\n`;
                 addEdge(parentId, currentId, edgeLabel);
                 return currentId;
             }
@@ -240,18 +201,13 @@ function generateMermaid(rootNode) {
                 const conditionText = conditionNode ? clean(conditionNode.text) : "condition";
                 flowCode += `  ${currentId}{${conditionText}}\n`;
                 addEdge(parentId, currentId, edgeLabel);
-
                 const consequence = n.childForFieldName('consequence');
                 if (consequence) walk(consequence, currentId, "True");
-
                 let pythonAlts = [];
                 for (let i = 0; i < n.childCount; i++) {
                     const c = n.child(i);
-                    if (c.type === 'elif_clause' || c.type === 'else_clause') {
-                        pythonAlts.push(c);
-                    }
+                    if (c.type === 'elif_clause' || c.type === 'else_clause') pythonAlts.push(c);
                 }
-
                 if (pythonAlts.length > 0) {
                     let prevDiamond = currentId;
                     for (let alt of pythonAlts) {
@@ -262,17 +218,16 @@ function generateMermaid(rootNode) {
                             const elifText = elifCond ? clean(elifCond.text) : "condition";
                             flowCode += `  ${elifId}{${elifText}}\n`;
                             addEdge(prevDiamond, elifId, "False");
-                            
                             const elifCons = alt.childForFieldName('consequence');
                             if (elifCons) walk(elifCons, elifId, "True");
-                            prevDiamond = elifId; 
+                            prevDiamond = elifId;
                         } else if (alt.type === 'else_clause') {
                             let passLabel = "False";
                             for (let j = 0; j < alt.childCount; j++) {
                                 const c = alt.child(j);
                                 if (!c.isNamed) continue;
                                 walk(c, prevDiamond, passLabel);
-                                passLabel = ""; 
+                                passLabel = "";
                             }
                         }
                     }
@@ -280,60 +235,48 @@ function generateMermaid(rootNode) {
                     const cAlt = n.childForFieldName('alternative');
                     if (cAlt) walk(cAlt, currentId, "False");
                 }
-                return currentId; 
+                return currentId;
             }
 
             if (type === 'while_statement' || type === 'for_statement') {
                 registeredNodes.add(currentId);
                 let conditionText = "loop";
                 if (type === 'while_statement') {
-                     const conditionNode = n.child(1);
-                     conditionText = conditionNode ? clean(conditionNode.text) : "while";
+                    const conditionNode = n.child(1);
+                    conditionText = conditionNode ? clean(conditionNode.text) : "while";
                 } else {
-                     conditionText = "for " + labelText.substring(0, 15);
+                    conditionText = "for " + labelText.substring(0, 15);
                 }
                 flowCode += `  ${currentId}{${conditionText}}\n`;
                 addEdge(parentId, currentId, edgeLabel);
-
                 const body = n.childForFieldName('body');
                 if (body) {
                     const endOfBodyId = walk(body, currentId, "True");
-                    addEdge(endOfBodyId, currentId); 
+                    addEdge(endOfBodyId, currentId);
                 }
-                return currentId; 
+                return currentId;
             }
 
             if (['expression_statement', 'assignment', 'declaration'].includes(type)) {
                 registeredNodes.add(currentId);
                 const isIO = rawText.includes('print') || rawText.includes('input') || rawText.includes('scanf');
                 const isCall = rawText.includes('(') && rawText.includes(')') && !isIO && type === 'expression_statement';
-                
-                // THE FIX: Removed internal quotes to prevent parser crashes
-                if (isIO) {
-                    flowCode += `  ${currentId}[/${labelText}/]\n`; 
-                } else if (isCall) {
-                    flowCode += `  ${currentId}[[${labelText}]]\n`; 
-                } else {
-                    flowCode += `  ${currentId}[${labelText}]\n`;   
-                }
+                if (isIO) flowCode += `  ${currentId}[/${labelText}/]\n`;
+                else if (isCall) flowCode += `  ${currentId}[[${labelText}]]\n`;
+                else flowCode += `  ${currentId}[${labelText}]\n`;
                 addEdge(parentId, currentId, edgeLabel);
                 return currentId;
             }
 
             let currentParent = parentId;
             let currentEdgeLabel = edgeLabel;
-            
             for (let i = 0; i < n.childCount; i++) {
                 const child = n.child(i);
-                if (!child.isNamed || child.type === 'function_definition') continue; 
-                
-                if (i > 0 && ['while_statement', 'for_statement'].includes(n.child(i-1).type)) {
-                    currentEdgeLabel = "False";
-                }
-
+                if (!child.isNamed || child.type === 'function_definition') continue;
+                if (i > 0 && ['while_statement', 'for_statement'].includes(n.child(i-1).type)) currentEdgeLabel = "False";
                 const nextParent = walk(child, currentParent, currentEdgeLabel);
                 if (nextParent !== currentParent) {
-                    currentEdgeLabel = ""; 
+                    currentEdgeLabel = "";
                     currentParent = nextParent;
                 }
             }
@@ -344,64 +287,172 @@ function generateMermaid(rootNode) {
         for (let node of nodesArray) {
             currentParentId = walk(node, currentParentId) || currentParentId;
         }
-
         if (isMain) {
             flowCode += `  ${stopId}([Stop])\n`;
             let hasOutgoingEdge = new Set(edges);
             for (let n of registeredNodes) {
-                if (!hasOutgoingEdge.has(n)) {
-                    flowCode += `  ${n} --> ${stopId}\n`;
-                }
+                if (!hasOutgoingEdge.has(n)) flowCode += `  ${n} --> ${stopId}\n`;
             }
         }
-
         return flowCode + "\n";
     }
 
     let cMainFunc = null;
     let otherFuncs = [];
-
     for (let func of functions) {
         const funcName = func.childForFieldName('name') ? func.childForFieldName('name').text : "";
-        if (funcName === 'main') {
-            cMainFunc = func;
-        } else {
-            otherFuncs.push(func);
-        }
+        if (funcName === 'main') cMainFunc = func;
+        else otherFuncs.push(func);
     }
 
+    let resultCode = code;
     if (cMainFunc) {
         const body = cMainFunc.childForFieldName('body');
         let bodyNodes = [];
-        if (body) {
-            for(let i=0; i<body.childCount; i++) if (body.child(i).isNamed) bodyNodes.push(body.child(i));
-        }
-        code += buildFlow("Main", bodyNodes, true);
+        if (body) for(let i=0; i<body.childCount; i++) if (body.child(i).isNamed) bodyNodes.push(body.child(i));
+        resultCode += buildFlow("Main", bodyNodes, true);
     } else if (mainNodes.length > 0) {
-        code += buildFlow("Main", mainNodes, true);
+        resultCode += buildFlow("Main", mainNodes, true);
     }
-
     for (let func of otherFuncs) {
         const funcName = func.childForFieldName('name') ? clean(func.childForFieldName('name').text) : "Func";
         const body = func.childForFieldName('body');
         let bodyNodes = [];
-        if (body) {
-            for(let i=0; i<body.childCount; i++) if (body.child(i).isNamed) bodyNodes.push(body.child(i));
-        }
-        code += buildFlow(funcName, bodyNodes, false);
+        if (body) for(let i=0; i<body.childCount; i++) if (body.child(i).isNamed) bodyNodes.push(body.child(i));
+        resultCode += buildFlow(funcName, bodyNodes, false);
     }
-
-    return code;
+    return resultCode;
 }
 
-// ========== MAIN INIT FUNCTION ==========
+// ========================== PAN & ZOOM (Interactive SVG) ==========================
+// These variables track the current transform (position and scale) of the flowchart SVG.
+let currentTransform = { x: 0, y: 0, scale: 1 };
+let isPanning = false;
+let startPan = { x: 0, y: 0 };
+
+// Attaches drag (pan) and wheel (zoom) behavior to the SVG element.
+function attachPanZoom(svgElement) {
+    if (!svgElement) return;
+    const container = svgElement.parentElement; // #chart-container
+    if (!container) return;
+    if (container._panZoomActive) return; // avoid duplicate listeners
+    container._panZoomActive = true;
+
+    function applyTransform() {
+        svgElement.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`;
+        svgElement.style.transformOrigin = '0 0';
+    }
+
+    function zoomAt(clientX, clientY, delta) {
+        const rect = svgElement.getBoundingClientRect();
+        const mouseX = (clientX - rect.left) / currentTransform.scale;
+        const mouseY = (clientY - rect.top) / currentTransform.scale;
+        const newScale = currentTransform.scale * (delta > 0 ? 1.1 : 0.9);
+        if (newScale < 0.2 || newScale > 5) return;
+        const newX = clientX - rect.left - mouseX * newScale;
+        const newY = clientY - rect.top - mouseY * newScale;
+        currentTransform.scale = newScale;
+        currentTransform.x = newX;
+        currentTransform.y = newY;
+        applyTransform();
+    }
+
+    const onWheel = (e) => {
+        e.preventDefault();
+        zoomAt(e.clientX, e.clientY, e.deltaY > 0 ? -1 : 1);
+    };
+    container.addEventListener('wheel', onWheel, { passive: false });
+
+    const onMouseDown = (e) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        isPanning = true;
+        startPan = { x: e.clientX - currentTransform.x, y: e.clientY - currentTransform.y };
+        container.style.cursor = 'grabbing';
+    };
+    const onMouseMove = (e) => {
+        if (!isPanning) return;
+        e.preventDefault();
+        currentTransform.x = e.clientX - startPan.x;
+        currentTransform.y = e.clientY - startPan.y;
+        applyTransform();
+    };
+    const onMouseUp = () => {
+        isPanning = false;
+        container.style.cursor = 'grab';
+    };
+    container.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+    container._cleanup = () => {
+        container.removeEventListener('wheel', onWheel);
+        container.removeEventListener('mousedown', onMouseDown);
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        container._panZoomActive = false;
+    };
+
+    svgElement.style.transition = 'transform 0.05s linear';
+    svgElement.style.cursor = 'grab';
+    container.style.cursor = 'grab';
+    applyTransform();
+}
+
+function detachPanZoom(container) {
+    if (container && container._cleanup) {
+        container._cleanup();
+    }
+}
+
+// Button-controlled zoom functions (used by the on‑screen buttons)
+function zoomIn() {
+    const svg = document.querySelector('#chart-container svg');
+    if (!svg) return;
+    const newScale = currentTransform.scale * 1.2;
+    if (newScale > 5) return;
+    const container = svg.parentElement;
+    const rect = container.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const oldScale = currentTransform.scale;
+    currentTransform.scale = newScale;
+    currentTransform.x = cx - (cx - currentTransform.x) * (newScale / oldScale);
+    currentTransform.y = cy - (cy - currentTransform.y) * (newScale / oldScale);
+    svg.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`;
+}
+
+function zoomOut() {
+    const svg = document.querySelector('#chart-container svg');
+    if (!svg) return;
+    const newScale = currentTransform.scale / 1.2;
+    if (newScale < 0.2) return;
+    const container = svg.parentElement;
+    const rect = container.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const oldScale = currentTransform.scale;
+    currentTransform.scale = newScale;
+    currentTransform.x = cx - (cx - currentTransform.x) * (newScale / oldScale);
+    currentTransform.y = cy - (cy - currentTransform.y) * (newScale / oldScale);
+    svg.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`;
+}
+
+function resetView() {
+    currentTransform = { x: 0, y: 0, scale: 1 };
+    const svg = document.querySelector('#chart-container svg');
+    if (svg) {
+        svg.style.transform = `translate(0px, 0px) scale(1)`;
+    }
+}
+
+// ========================== MAIN INITIALIZATION ==========================
 async function init() {
     try {
         await TreeSitter.init({
             locateFile(scriptName) { return 'parsers/' + scriptName; }
         });
         const parser = new TreeSitter();
-        
         const langPython = await TreeSitter.Language.load('parsers/tree-sitter-python.wasm');
         const langC = await TreeSitter.Language.load('parsers/tree-sitter-c.wasm');
 
@@ -413,36 +464,24 @@ async function init() {
         const themeToggle = document.getElementById('themeToggle');
         const newProjectBtn = document.getElementById('newProjectBtn');
 
-        // Sidebar logic
+        // Sidebar toggle
         const sidebar = document.getElementById('sidebar');
         const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
         let isSidebarOpen = true;
-
         if (toggleSidebarBtn && sidebar) {
             toggleSidebarBtn.addEventListener('click', () => {
                 isSidebarOpen = !isSidebarOpen;
-                if (isSidebarOpen) {
-                    sidebar.style.width = '16rem';
-                    sidebar.style.opacity = '1';
-                } else {
-                    sidebar.style.width = '0px';
-                    sidebar.style.opacity = '0';
-                }
+                sidebar.style.width = isSidebarOpen ? '16rem' : '0px';
+                sidebar.style.opacity = isSidebarOpen ? '1' : '0';
             });
         }
 
-        // Initialize history manager
         const historyManager = new HistoryManager();
         historyManager.renderHistory();
 
-        // Dark mode logic
         if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                document.documentElement.classList.toggle('dark');
-            });
+            themeToggle.addEventListener('click', () => document.documentElement.classList.toggle('dark'));
         }
-
-        // New Project button
         if (newProjectBtn) {
             newProjectBtn.addEventListener('click', () => {
                 input.value = '';
@@ -452,7 +491,6 @@ async function init() {
             });
         }
 
-        // Auto-load logic
         const savedDraft = localStorage.getItem('autosave_draft');
         if (savedDraft) {
             const draftData = JSON.parse(savedDraft);
@@ -461,68 +499,60 @@ async function init() {
             console.log("📥 Auto-saved draft loaded!");
         }
 
-        mermaid.initialize({ 
-            startOnLoad: false, 
-            theme: 'base',
-            flowchart: { useMaxWidth: false } 
-        });
+        mermaid.initialize({ startOnLoad: false, theme: 'base', flowchart: { useMaxWidth: false } });
 
-        // Auto-save logic
         function triggerAutoSave() {
-            const currentData = {
-                code: input.value,
-                language: langSelect.value
-            };
-            localStorage.setItem('autosave_draft', JSON.stringify(currentData));
+            localStorage.setItem('autosave_draft', JSON.stringify({ code: input.value, language: langSelect.value }));
         }
-
         input.addEventListener('input', triggerAutoSave);
         langSelect.addEventListener('change', triggerAutoSave);
 
-        // Generation logic
+        // Zoom button listeners
+        document.getElementById('zoomInBtn')?.addEventListener('click', zoomIn);
+        document.getElementById('zoomOutBtn')?.addEventListener('click', zoomOut);
+        document.getElementById('resetViewBtn')?.addEventListener('click', resetView);
+
         btn.addEventListener('click', () => {
             const currentCode = input.value;
             const currentLang = langSelect.value;
             const preview = currentCode.split('\n')[0].substring(0, 40);
-            
-            // Save to history
-            if (currentCode.trim()) {
-                historyManager.saveToHistory(currentCode, currentLang, preview);
-            }
-            
+            if (currentCode.trim()) historyManager.saveToHistory(currentCode, currentLang, preview);
+
             loader.classList.remove('hidden');
             chartContainer.innerHTML = '';
+            // Reset transform before new diagram
+            currentTransform = { x: 0, y: 0, scale: 1 };
 
             setTimeout(async () => {
                 try {
                     let codeToParse = input.value;
-                    
                     if (langSelect.value === 'c') {
                         parser.setLanguage(langC);
                         codeToParse = preprocessCCode(codeToParse);
                     } else {
                         parser.setLanguage(langPython);
                     }
-
                     const tree = parser.parse(codeToParse);
                     let diagramText = generateMermaid(tree.rootNode);
-                    
                     chartContainer.innerHTML = `<div style="display:inline-block; text-align:left;"><pre class="mermaid">${diagramText}</pre></div>`;
-                    
                     const mermaidElement = chartContainer.querySelector('.mermaid');
-                    if (mermaidElement) {
-                        mermaidElement.removeAttribute('data-processed');
-                    }
+                    if (mermaidElement) mermaidElement.removeAttribute('data-processed');
                     await mermaid.run();
+
+                    // After rendering, attach pan/zoom to the new SVG
+                    const svg = chartContainer.querySelector('svg');
+                    if (svg) {
+                        const parent = svg.parentElement;
+                        detachPanZoom(parent);
+                        attachPanZoom(svg);
+                    }
                 } catch (err) {
                     console.error("Error generating flowchart:", err);
-                    chartContainer.innerHTML = `
-                        <div class="flex flex-col items-center justify-center text-center h-full">
-                            <span class="material-symbols-outlined text-4xl text-error">error</span>
-                            <p class="text-error text-sm mt-4">Error generating flowchart</p>
-                            <p class="text-on-surface-variant text-xs mt-2">${err.message}</p>
-                        </div>
-                    `;
+                    chartContainer.innerHTML = `<div class="flex flex-col items-center justify-center text-center h-full">
+                        <span class="material-symbols-outlined text-4xl text-error">error</span>
+                        <p class="text-error text-sm mt-4">Error generating flowchart</p>
+                        <p class="text-on-surface-variant text-xs mt-2">${err.message}</p>
+                    </div>`;
                 } finally {
                     loader.classList.add('hidden');
                 }
@@ -530,14 +560,11 @@ async function init() {
         });
 
         // Auto-generate on page load
-        setTimeout(() => {
-            btn.click();
-        }, 500);
-
-    } catch (e) { 
-        console.error("❌ ERROR:", e); 
+        setTimeout(() => btn.click(), 500);
+    } catch (e) {
+        console.error("❌ ERROR:", e);
     }
 }
 
-// Start the app
+// Start everything
 init();
