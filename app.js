@@ -1,18 +1,17 @@
 // ============================================================================
-//  CODE TO FLOWCHART - COMPLETE APP.JS (with Pan, Zoom, History, Parser)
+//  CODE TO FLOWCHART - COMPLETE APP.JS (with Wrapper-based Pan/Zoom, History, Parser)
 // ============================================================================
 //  This file handles:
 //    - Tree-sitter parsing (Python & C)
 //    - Mermaid flowchart generation
 //    - Auto‑save & history panel (localStorage)
 //    - Dark mode toggle
-//    - Interactive pan & zoom (mouse drag + scroll + buttons)
+//    - Interactive Wrapper-based pan & zoom (mouse drag + scroll + buttons)
 // ============================================================================
 
 console.log("🚀 App.js is loaded and running!");
 
 // ========================== HISTORY MANAGER ==========================
-// Stores last 10 flowcharts in localStorage, displays them in sidebar.
 class HistoryManager {
     constructor() {
         this.maxHistoryItems = 10;
@@ -35,7 +34,6 @@ class HistoryManager {
             date: new Date().toLocaleDateString(),
             time: new Date().toLocaleTimeString()
         };
-
         const isDuplicate = history.some(item => item.code === code && item.language === language);
         if (!isDuplicate) {
             history.unshift(newItem);
@@ -60,14 +58,20 @@ class HistoryManager {
     }
 
     loadHistoryItem(item) {
-        const input = document.getElementById('inputCode');
-        const langSelect = document.getElementById('langSelect');
-        input.value = item.code;
-        langSelect.value = item.language;
-        input.dispatchEvent(new Event('input'));
-        setTimeout(() => document.getElementById('updateBtn').click(), 100);
-        this.showNotification('✅ Loaded: ' + item.preview);
+    const input = document.getElementById('inputCode');
+    const langSelect = document.getElementById('langSelect');
+    input.value = item.code;
+    langSelect.value = item.language;
+    input.dispatchEvent(new Event('input'));
+    
+    // Update CodeMirror editor (global reference)
+    if (window.globalEditor && window.globalEditor.setValue) {
+        window.globalEditor.setValue(item.code);
     }
+    
+    setTimeout(() => document.getElementById('updateBtn').click(), 100);
+    this.showNotification('✅ Loaded: ' + item.preview);
+}
 
     renderHistory() {
         const historyContainer = document.getElementById('historyContainer');
@@ -126,9 +130,19 @@ class HistoryManager {
         return div.innerHTML;
     }
 }
-
+// Helper to update CodeMirror editor when history loads
+function updateCodeMirrorEditor(code) {
+    // Try to access the global editor variable (CodeMirror 5)
+    if (typeof editor !== 'undefined' && editor && editor.setValue) {
+        editor.setValue(code);
+    }
+    // Alternative: find the CodeMirror instance via DOM
+    const cmDiv = document.querySelector('.CodeMirror');
+    if (cmDiv && cmDiv.CodeMirror) {
+        cmDiv.CodeMirror.setValue(code);
+    }
+}
 // ========================== C PREPROCESSOR ==========================
-// Removes preprocessor directives (#include, #define, #if, #endif) so Tree-sitter parses cleanly.
 function preprocessCCode(code) {
     let cleaned = code.replace(/^#include.*$/gm, '');
     cleaned = cleaned.replace(/^#define.*$/gm, '');
@@ -138,12 +152,10 @@ function preprocessCCode(code) {
 }
 
 // ========================== MERMAID GENERATOR ==========================
-// Converts Tree-sitter AST into Mermaid flowchart syntax.
 function generateMermaid(rootNode) {
     let code = "graph TD\n";
     let idCounter = 0;
 
-    // Bulletproof text cleaner: removes characters that break Mermaid syntax.
     function clean(text) {
         if (!text) return "Node";
         let str = text.split('\n')[0];
@@ -324,42 +336,48 @@ function generateMermaid(rootNode) {
     return resultCode;
 }
 
-// ========================== PAN & ZOOM (Interactive SVG) ==========================
-// These variables track the current transform (position and scale) of the flowchart SVG.
+// ========================== PAN & ZOOM (Wrapper-based) ==========================
 let currentTransform = { x: 0, y: 0, scale: 1 };
 let isPanning = false;
 let startPan = { x: 0, y: 0 };
 
-// Attaches drag (pan) and wheel (zoom) behavior to the SVG element.
-function attachPanZoom(svgElement) {
-    if (!svgElement) return;
-    const container = svgElement.parentElement; // #chart-container
+function attachPanZoom(wrapperElement) {
+    if (!wrapperElement) return;
+    const container = wrapperElement.parentElement; // #chart-container
     if (!container) return;
-    if (container._panZoomActive) return; // avoid duplicate listeners
+    if (container._panZoomActive) return;
     container._panZoomActive = true;
 
+    const transformTarget = wrapperElement;
+
     function applyTransform() {
-        svgElement.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`;
-        svgElement.style.transformOrigin = '0 0';
+        transformTarget.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`;
     }
 
     function zoomAt(clientX, clientY, delta) {
-        const rect = svgElement.getBoundingClientRect();
-        const mouseX = (clientX - rect.left) / currentTransform.scale;
-        const mouseY = (clientY - rect.top) / currentTransform.scale;
-        const newScale = currentTransform.scale * (delta > 0 ? 1.1 : 0.9);
+        // delta: +1 = zoom in, -1 = zoom out
+        const zoomFactor = delta === 1 ? 1.1 : 0.9;
+        const newScale = currentTransform.scale * zoomFactor;
         if (newScale < 0.2 || newScale > 5) return;
-        const newX = clientX - rect.left - mouseX * newScale;
-        const newY = clientY - rect.top - mouseY * newScale;
+
+        const containerRect = container.getBoundingClientRect();
+        const mouseX = clientX - containerRect.left;
+        const mouseY = clientY - containerRect.top;
+
+        // Point in the wrapper's local coordinate system (before zoom)
+        const localX = (mouseX - currentTransform.x) / currentTransform.scale;
+        const localY = (mouseY - currentTransform.y) / currentTransform.scale;
+
+        currentTransform.x = mouseX - localX * newScale;
+        currentTransform.y = mouseY - localY * newScale;
         currentTransform.scale = newScale;
-        currentTransform.x = newX;
-        currentTransform.y = newY;
+
         applyTransform();
     }
 
     const onWheel = (e) => {
         e.preventDefault();
-        zoomAt(e.clientX, e.clientY, e.deltaY > 0 ? -1 : 1);
+        zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1 : -1);
     };
     container.addEventListener('wheel', onWheel, { passive: false });
 
@@ -393,8 +411,7 @@ function attachPanZoom(svgElement) {
         container._panZoomActive = false;
     };
 
-    svgElement.style.transition = 'transform 0.05s linear';
-    svgElement.style.cursor = 'grab';
+    transformTarget.style.transition = 'transform 0.05s linear';
     container.style.cursor = 'grab';
     applyTransform();
 }
@@ -405,48 +422,50 @@ function detachPanZoom(container) {
     }
 }
 
-// Button-controlled zoom functions (used by the on‑screen buttons)
+// Button zoom (centered on view)
 function zoomIn() {
-    const svg = document.querySelector('#chart-container svg');
-    if (!svg) return;
+    const wrapper = document.querySelector('.zoom-pan-wrapper');
+    if (!wrapper) return;
+    const container = wrapper.parentElement;
+    const rect = container.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
     const newScale = currentTransform.scale * 1.2;
     if (newScale > 5) return;
-    const container = svg.parentElement;
-    const rect = container.getBoundingClientRect();
-    const cx = rect.width / 2;
-    const cy = rect.height / 2;
-    const oldScale = currentTransform.scale;
+    const localX = (centerX - rect.left - currentTransform.x) / currentTransform.scale;
+    const localY = (centerY - rect.top - currentTransform.y) / currentTransform.scale;
+    currentTransform.x = (centerX - rect.left) - localX * newScale;
+    currentTransform.y = (centerY - rect.top) - localY * newScale;
     currentTransform.scale = newScale;
-    currentTransform.x = cx - (cx - currentTransform.x) * (newScale / oldScale);
-    currentTransform.y = cy - (cy - currentTransform.y) * (newScale / oldScale);
-    svg.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`;
+    wrapper.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`;
 }
 
 function zoomOut() {
-    const svg = document.querySelector('#chart-container svg');
-    if (!svg) return;
+    const wrapper = document.querySelector('.zoom-pan-wrapper');
+    if (!wrapper) return;
+    const container = wrapper.parentElement;
+    const rect = container.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
     const newScale = currentTransform.scale / 1.2;
     if (newScale < 0.2) return;
-    const container = svg.parentElement;
-    const rect = container.getBoundingClientRect();
-    const cx = rect.width / 2;
-    const cy = rect.height / 2;
-    const oldScale = currentTransform.scale;
+    const localX = (centerX - rect.left - currentTransform.x) / currentTransform.scale;
+    const localY = (centerY - rect.top - currentTransform.y) / currentTransform.scale;
+    currentTransform.x = (centerX - rect.left) - localX * newScale;
+    currentTransform.y = (centerY - rect.top) - localY * newScale;
     currentTransform.scale = newScale;
-    currentTransform.x = cx - (cx - currentTransform.x) * (newScale / oldScale);
-    currentTransform.y = cy - (cy - currentTransform.y) * (newScale / oldScale);
-    svg.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`;
+    wrapper.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`;
 }
 
 function resetView() {
     currentTransform = { x: 0, y: 0, scale: 1 };
-    const svg = document.querySelector('#chart-container svg');
-    if (svg) {
-        svg.style.transform = `translate(0px, 0px) scale(1)`;
+    const wrapper = document.querySelector('.zoom-pan-wrapper');
+    if (wrapper) {
+        wrapper.style.transform = `translate(0px, 0px) scale(1)`;
     }
 }
 
-// ========================== MAIN INITIALIZATION ==========================
+// ========================== MAIN INIT ==========================
 async function init() {
     try {
         await TreeSitter.init({
@@ -479,6 +498,47 @@ async function init() {
         const historyManager = new HistoryManager();
         historyManager.renderHistory();
 
+        // --- Define auto-save function FIRST ---
+        function triggerAutoSave() {
+            localStorage.setItem('autosave_draft', JSON.stringify({ code: input.value, language: langSelect.value }));
+        }
+
+        // --- Auto-save draft is NOT loaded on page refresh (only history) ---
+// We keep auto-save for changes, but initial load comes from history.
+console.log("🔄 Skipping auto-save draft on load, using history instead.");
+
+        // --- Load most recent history (overwrites draft) ---
+const history = historyManager.getHistory();
+if (history.length > 0) {
+    const lastItem = history[0];
+    input.value = lastItem.code;
+    langSelect.value = lastItem.language;
+    // Immediately update the editor if it exists
+    if (window.updateEditorContent) {
+        window.updateEditorContent(lastItem.code, lastItem.language);
+    } else {
+        // Editor not ready yet – store for later
+        window._pendingEditorUpdate = { code: lastItem.code, language: lastItem.language };
+    }
+    // Overwrite the auto-save draft to match history
+    triggerAutoSave();
+    console.log("📜 Loaded most recent history item:", lastItem.preview);
+} else {
+    // No history, ensure default code is saved as draft
+    triggerAutoSave();
+}
+
+        // --- Mermaid and event listeners ---
+        mermaid.initialize({ startOnLoad: false, theme: 'base', flowchart: { useMaxWidth: false } });
+
+        input.addEventListener('input', triggerAutoSave);
+        langSelect.addEventListener('change', () => {
+            triggerAutoSave();
+            if (window.updateEditorLanguage) {
+                window.updateEditorLanguage(langSelect.value);
+            }
+        });
+
         if (themeToggle) {
             themeToggle.addEventListener('click', () => document.documentElement.classList.toggle('dark'));
         }
@@ -491,23 +551,7 @@ async function init() {
             });
         }
 
-        const savedDraft = localStorage.getItem('autosave_draft');
-        if (savedDraft) {
-            const draftData = JSON.parse(savedDraft);
-            input.value = draftData.code;
-            langSelect.value = draftData.language;
-            console.log("📥 Auto-saved draft loaded!");
-        }
-
-        mermaid.initialize({ startOnLoad: false, theme: 'base', flowchart: { useMaxWidth: false } });
-
-        function triggerAutoSave() {
-            localStorage.setItem('autosave_draft', JSON.stringify({ code: input.value, language: langSelect.value }));
-        }
-        input.addEventListener('input', triggerAutoSave);
-        langSelect.addEventListener('change', triggerAutoSave);
-
-        // Zoom button listeners
+        // Button listeners
         document.getElementById('zoomInBtn')?.addEventListener('click', zoomIn);
         document.getElementById('zoomOutBtn')?.addEventListener('click', zoomOut);
         document.getElementById('resetViewBtn')?.addEventListener('click', resetView);
@@ -520,7 +564,6 @@ async function init() {
 
             loader.classList.remove('hidden');
             chartContainer.innerHTML = '';
-            // Reset transform before new diagram
             currentTransform = { x: 0, y: 0, scale: 1 };
 
             setTimeout(async () => {
@@ -534,18 +577,20 @@ async function init() {
                     }
                     const tree = parser.parse(codeToParse);
                     let diagramText = generateMermaid(tree.rootNode);
-                    chartContainer.innerHTML = `<div style="display:inline-block; text-align:left;"><pre class="mermaid">${diagramText}</pre></div>`;
-                    const mermaidElement = chartContainer.querySelector('.mermaid');
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'zoom-pan-wrapper';
+                    wrapper.style.display = 'inline-block';
+                    wrapper.style.transformOrigin = '0 0';
+                    wrapper.innerHTML = `<pre class="mermaid">${diagramText}</pre>`;
+                    chartContainer.appendChild(wrapper);
+
+                    const mermaidElement = wrapper.querySelector('.mermaid');
                     if (mermaidElement) mermaidElement.removeAttribute('data-processed');
                     await mermaid.run();
 
-                    // After rendering, attach pan/zoom to the new SVG
-                    const svg = chartContainer.querySelector('svg');
-                    if (svg) {
-                        const parent = svg.parentElement;
-                        detachPanZoom(parent);
-                        attachPanZoom(svg);
-                    }
+                    detachPanZoom(chartContainer);
+                    attachPanZoom(wrapper);
                 } catch (err) {
                     console.error("Error generating flowchart:", err);
                     chartContainer.innerHTML = `<div class="flex flex-col items-center justify-center text-center h-full">
@@ -559,12 +604,10 @@ async function init() {
             }, 100);
         });
 
-        // Auto-generate on page load
         setTimeout(() => btn.click(), 500);
     } catch (e) {
         console.error("❌ ERROR:", e);
     }
 }
 
-// Start everything
 init();
