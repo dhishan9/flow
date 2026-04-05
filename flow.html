@@ -131,6 +131,39 @@
         .CodeMirror {
             height: 100%;
         }
+        /* Mobile responsive – only affects screens below 768px */
+@media (max-width: 768px) {
+    .flex.flex-col.md\:flex-row {
+        flex-direction: column !important;
+    }
+    section.w-full.md\:w-\[40\%\],
+    section.w-full.md\:w-\[60\%\] {
+        width: 100% !important;
+        height: 50% !important;
+        min-height: 250px;
+    }
+    button, .delete-history {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    /* Sidebar overlay on mobile */
+    #sidebar {
+        position: fixed !important;
+        top: 64px;
+        left: 0;
+        bottom: 0;
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        width: 16rem !important;
+    }
+    #sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    .absolute.bottom-4.right-4 {
+        bottom: 70px;
+    }
+}
     </style>
 </head>
 <body class="bg-surface text-on-surface antialiased overflow-hidden h-screen flex flex-col">
