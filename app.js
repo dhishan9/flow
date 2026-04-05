@@ -349,7 +349,15 @@ function attachPanZoom(wrapperElement) {
     container._panZoomActive = true;
 
     const transformTarget = wrapperElement;
-
+    let initialPinchDistance = 0;
+    let initialScale = 1;
+    let panStart = null;
+function getPinchDistance(touches) {
+    if (touches.length < 2) return 0;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.hypot(dx, dy);
+}
     function applyTransform() {
         transformTarget.style.transform = `translate(${currentTransform.x}px, ${currentTransform.y}px) scale(${currentTransform.scale})`;
     }
@@ -399,21 +407,48 @@ function attachPanZoom(wrapperElement) {
         isPanning = false;
         container.style.cursor = 'grab';
     };
+    
     container.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
 
     container._cleanup = () => {
-        container.removeEventListener('wheel', onWheel);
-        container.removeEventListener('mousedown', onMouseDown);
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
-        container._panZoomActive = false;
-    };
+    container.removeEventListener('wheel', onWheel);
+    container.removeEventListener('mousedown', onMouseDown);
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+    container.removeEventListener('touchstart', onTouchStart);
+    container.removeEventListener('touchmove', onTouchMove);
+    container.removeEventListener('touchend', onTouchEnd);
+    container._panZoomActive = false;
+};
 
     transformTarget.style.transition = 'transform 0.05s linear';
     container.style.cursor = 'grab';
     applyTransform();
+    // Add touch events for mobile (keep existing mouse/wheel code)
+const onTouchStart = (e) => {
+    if (e.touches.length === 1) {
+        e.preventDefault();
+        isPanning = true;
+        startPan = { x: e.touches[0].clientX - currentTransform.x, y: e.touches[0].clientY - currentTransform.y };
+        container.style.cursor = 'grabbing';
+    }
+};
+const onTouchMove = (e) => {
+    if (!isPanning) return;
+    e.preventDefault();
+    currentTransform.x = e.touches[0].clientX - startPan.x;
+    currentTransform.y = e.touches[0].clientY - startPan.y;
+    applyTransform();
+};
+const onTouchEnd = () => {
+    isPanning = false;
+    container.style.cursor = 'grab';
+};
+container.addEventListener('touchstart', onTouchStart, { passive: false });
+container.addEventListener('touchmove', onTouchMove, { passive: false });
+container.addEventListener('touchend', onTouchEnd);
 }
 
 function detachPanZoom(container) {
@@ -485,15 +520,24 @@ async function init() {
 
         // Sidebar toggle
         const sidebar = document.getElementById('sidebar');
-        const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
-        let isSidebarOpen = true;
-        if (toggleSidebarBtn && sidebar) {
-            toggleSidebarBtn.addEventListener('click', () => {
-                isSidebarOpen = !isSidebarOpen;
-                sidebar.style.width = isSidebarOpen ? '16rem' : '0px';
-                sidebar.style.opacity = isSidebarOpen ? '1' : '0';
-            });
+const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+let isSidebarOpen = false;
+
+if (toggleSidebarBtn && sidebar) {
+    toggleSidebarBtn.addEventListener('click', () => {
+        isSidebarOpen = !isSidebarOpen;
+        if (window.innerWidth <= 768) {
+            if (isSidebarOpen) {
+                sidebar.classList.add('mobile-open');
+            } else {
+                sidebar.classList.remove('mobile-open');
+            }
+        } else {
+            sidebar.style.width = isSidebarOpen ? '16rem' : '0px';
+            sidebar.style.opacity = isSidebarOpen ? '1' : '0';
         }
+    });
+}
 
         const historyManager = new HistoryManager();
         historyManager.renderHistory();
